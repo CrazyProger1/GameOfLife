@@ -12,6 +12,9 @@ class Game:
         self._cam_shift = [0, 0]
         self._pause = False
         self._make_step = False
+        self._speed_factor = 10
+        self._clock = pygame.time.Clock()
+        self._pressed_buttons = set()
 
         pygame.display.set_caption(CAPTION)
 
@@ -84,7 +87,6 @@ class Game:
         return empties
 
     def _update_units_state(self):
-        print("step")
         to_add = set()
         to_remove = set()
 
@@ -113,7 +115,22 @@ class Game:
     def _update(self):
         self._handle_events()
 
+        for key in self._pressed_buttons:
+            match key:
+                case pygame.K_UP:
+                    self._cam_shift[1] += 0.3
+
+                case pygame.K_DOWN:
+                    self._cam_shift[1] -= 0.3
+
+                case pygame.K_LEFT:
+                    self._cam_shift[0] += 0.3
+
+                case pygame.K_RIGHT:
+                    self._cam_shift[0] -= 0.3
+
         if not self._pause or self._make_step:
+            # if pygame.time.get_ticks() % self._speed_factor == 0:
             self._update_units_state()
 
     def _handle_events(self):
@@ -122,22 +139,24 @@ class Game:
                 self._stop = True
 
             if event.type == pygame.KEYDOWN:
+                self._pressed_buttons.add(event.key)
                 match event.key:
                     case pygame.K_g:
                         self._show_grid = not self._show_grid
-                    case pygame.K_UP:
-                        self._cam_shift[1] += 1
-                    case pygame.K_DOWN:
-                        self._cam_shift[1] -= 1
-                    case pygame.K_LEFT:
-                        self._cam_shift[0] += 1
-                    case pygame.K_RIGHT:
-                        self._cam_shift[0] -= 1
                     case pygame.K_SPACE:
                         self._pause = not self._pause
-
                     case pygame.K_e:
                         self._make_step = True
+                    case pygame.K_c:
+                        self._units.clear()
+                    # case pygame.K_w:
+                    #     self._speed_factor -= 2
+                    #     if self._speed_factor == 0:
+                    #         self._speed_factor = 1
+                    # case pygame.K_s:
+                    #     self._speed_factor += 2
+                    #     if self._speed_factor == 0:
+                    #         self._speed_factor = 1
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 4:
@@ -156,10 +175,19 @@ class Game:
                     else:
                         self._units.remove(unit_pos)
 
+            elif event.type == pygame.KEYUP:
+                if event.key in [pygame.K_UP, pygame.K_DOWN, pygame.K_LEFT, pygame.K_RIGHT]:
+                    self._cam_shift[1] = int(self._cam_shift[1])
+                    self._cam_shift[0] = int(self._cam_shift[0])
+
+                self._pressed_buttons.remove(event.key)
+
     def run(self):
         while not self._stop:
             self._update()
             self._draw()
+            print(self._clock.get_fps())
+            self._clock.tick(1000)
 
 
 if __name__ == '__main__':
