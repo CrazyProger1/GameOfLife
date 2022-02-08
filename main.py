@@ -147,8 +147,8 @@ class Game:
                 elif event.button == 1:
                     mouse_pos = pygame.mouse.get_pos()
                     unit_pos = (
-                        mouse_pos[0] // (CELL_SIZE * self._scale),
-                        mouse_pos[1] // (CELL_SIZE * self._scale)
+                        mouse_pos[0] // (CELL_SIZE * self._scale) - self._cam_shift[0],
+                        mouse_pos[1] // (CELL_SIZE * self._scale) - self._cam_shift[1]
                     )
 
                     if unit_pos not in self._units:
